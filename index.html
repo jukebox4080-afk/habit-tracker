@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>習慣化トラッカー</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #334155;
+    --accent: #6366f1;
+    --accent2: #818cf8;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --text: #f1f5f9;
+    --text2: #94a3b8;
+    --border: #334155;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav .logo { font-size: 20px; font-weight: 700; color: var(--accent2); margin-right: auto; }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--text2);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .tab-btn.active { background: var(--accent); color: #fff; }
+  .tab-btn:hover:not(.active) { background: var(--surface2); color: var(--text); }
+
+  /* ===== LAYOUT ===== */
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 20px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+  .btn-danger:hover { background: var(--danger); color: #fff; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .btn-ghost { background: var(--surface2); color: var(--text); }
+  .btn-ghost:hover { background: var(--border); }
+
+  /* ===== INPUTS ===== */
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--text2); }
+
+  /* ===== GRID ===== */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .flex { display: flex; align-items: center; }
+  .flex-gap { gap: 8px; }
+  .flex-between { justify-content: space-between; }
+  .mt-16 { margin-top: 16px; }
+  .mt-8 { margin-top: 8px; }
+  .mb-16 { margin-bottom: 16px; }
+
+  /* ===========================
+     PAGE 1: 習慣トラッカー
+  =========================== */
+  .habit-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: var(--surface2);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: transform 0.1s;
+  }
+  .habit-row:hover { transform: translateX(2px); }
+  .habit-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .habit-name { flex: 1; font-weight: 500; }
+  .habit-streak {
+    font-size: 12px;
+    color: var(--warning);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 60px;
+  }
+  .habit-total {
+    font-size: 12px;
+    color: var(--accent2);
+    min-width: 70px;
+    text-align: right;
+  }
+  .time-input-wrap { display: flex; align-items: center; gap: 6px; }
+  .time-input-wrap input[type=number] { width: 60px; text-align: center; }
+  .done-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .done-btn.done { background: var(--success); border-color: var(--success); }
+  .done-btn:hover { border-color: var(--success); }
+
+  .stat-card {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-num { font-size: 28px; font-weight: 700; color: var(--accent2); }
+  .stat-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  .add-habit-form {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    padding: 16px;
+    background: var(--surface2);
+    border-radius: 10px;
+    margin-top: 16px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: 12px; color: var(--text2); }
+
+  /* ===========================
+     PAGE 2: カレンダー
+  =========================== */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-top: 12px;
+  }
+  .cal-header {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text2);
+    padding: 4px;
+    font-weight: 600;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: var(--surface2);
+    border: 1px solid transparent;
+  }
+  .cal-day:hover { border-color: var(--accent); }
+  .cal-day.today { border-color: var(--accent); font-weight: 700; }
+  .cal-day.empty { background: none; cursor: default; }
+  .cal-day.empty:hover { border-color: transparent; }
+  .cal-dots {
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: absolute;
+    bottom: 4px;
+    max-width: 90%;
+  }
+  .cal-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+  .cal-day-num { font-size: 13px; }
+
+  .habit-filter {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .filter-chip {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: none;
+    color: var(--text2);
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .filter-chip.active { border-color: transparent; color: #fff; }
+  .filter-chip .chip-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .cal-nav span { font-size: 16px; font-weight: 600; flex: 1; text-align: center; }
+
+  /* ===========================
+     PAGE 3: スケジュール
+  =========================== */
+  .schedule-date-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .schedule-date-nav span { font-size: 16px; font-weight: 600; flex: 1; text-align: center; }
+
+  .schedule-add-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: end;
+  }
+  .schedule-add-form .full { grid-column: 1 / -1; }
+
+  /* 24h timeline */
+  .timeline24-wrap {
+    position: relative;
+    overflow-y: auto;
+    max-height: 600px;
+    border-radius: 10px;
+    background: var(--surface2);
+  }
+  .timeline24 {
+    position: relative;
+    width: 100%;
+  }
+  .hour-row {
+    display: flex;
+    align-items: flex-start;
+    height: 48px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .hour-row:last-child { border-bottom: none; }
+  .hour-label {
+    width: 44px;
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--text2);
+    padding: 4px 6px 0;
+    text-align: right;
+    user-select: none;
+  }
+  .hour-track {
+    flex: 1;
+    position: relative;
+    height: 48px;
+    border-left: 1px solid rgba(255,255,255,0.08);
+  }
+  /* half-hour guide */
+  .hour-track::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0; right: 0;
+    height: 1px;
+    background: rgba(255,255,255,0.04);
+  }
+
+  /* Activity blocks overlaid on the track area */
+  .act-blocks {
+    position: absolute;
+    top: 0;
+    left: 44px;
+    right: 0;
+    /* height = 24 * 48px */
+    height: 1152px;
+    pointer-events: none;
+  }
+  .act-block {
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    pointer-events: all;
+    transition: filter 0.15s;
+    border-left: 3px solid rgba(255,255,255,0.4);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .act-block:hover { filter: brightness(1.15); }
+  .act-block .act-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .act-block .act-dur { font-size: 11px; opacity: 0.8; white-space: nowrap; }
+  .act-block .act-del {
+    background: none; border: none; color: rgba(255,255,255,0.6);
+    cursor: pointer; font-size: 13px; line-height: 1; padding: 0 2px;
+    display: none;
+  }
+  .act-block:hover .act-del { display: block; }
+  .act-del:hover { color: var(--danger) !important; }
+
+  /* current time line */
+  .now-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: var(--danger);
+    z-index: 10;
+    pointer-events: none;
+  }
+  .now-line::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -4px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--danger);
+  }
+
+  /* Pie / Donut Chart */
+  .donut-wrap {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .donut-svg { flex-shrink: 0; }
+  .donut-legend { flex: 1; min-width: 160px; }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-bar-wrap { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .legend-bar { height: 100%; border-radius: 3px; }
+  .legend-pct { font-size: 12px; color: var(--text2); min-width: 36px; text-align: right; }
+
+  .free-alert {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .free-alert.good { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
+  .free-alert.warn { background: rgba(245,158,11,0.15); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
+  .free-alert.danger { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+
+  .unallocated-bar {
+    margin-top: 12px;
+    height: 24px;
+    border-radius: 12px;
+    background: var(--surface2);
+    overflow: hidden;
+    display: flex;
+  }
+  .unallocated-seg {
+    height: 100%;
+    transition: width 0.5s;
+  }
+
+  /* ===========================
+     MODAL
+  =========================== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+  }
+  .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+  /* ===========================
+     RESPONSIVE
+  =========================== */
+  @media (max-width: 640px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    nav { padding: 0 12px; }
+    .tab-btn { padding: 6px 10px; font-size: 13px; }
+    .donut-wrap { flex-direction: column; }
+    .donut-svg { align-self: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">🌱 習慣トラッカー</span>
+  <button class="tab-btn active" onclick="showPage('habits')">📋 習慣</button>
+  <button class="tab-btn" onclick="showPage('calendar')">📅 カレンダー</button>
+  <button class="tab-btn" onclick="showPage('schedule')">⏱️ スケジュール</button>
+</nav>
+
+<main>
+
+  <!-- ========== PAGE: 習慣 ========== -->
+  <div class="page active" id="page-habits">
+    <div class="grid-3 mb-16" id="stat-cards">
+      <!-- rendered by JS -->
+    </div>
+
+    <div class="card mb-16">
+      <div class="card-title">📋 今日の習慣 <span id="today-label" style="font-weight:400;color:var(--text2);font-size:13px;margin-left:auto"></span></div>
+      <div id="habit-list"><!-- rendered by JS --></div>
+
+      <div class="add-habit-form" id="add-habit-form" style="display:none">
+        <div class="form-group">
+          <label>習慣名</label>
+          <input type="text" id="new-habit-name" placeholder="例: 読書" style="width:140px">
+        </div>
+        <div class="form-group">
+          <label>カラー</label>
+          <input type="color" id="new-habit-color" value="#6366f1" style="width:48px;height:36px;padding:2px;cursor:pointer">
+        </div>
+        <div class="form-group">
+          <label>目標(分/日)</label>
+          <input type="number" id="new-habit-goal" placeholder="30" style="width:80px" min="1">
+        </div>
+        <div class="form-group">
+          <label>カテゴリ</label>
+          <select id="new-habit-cat">
+            <option value="study">📚 勉強</option>
+            <option value="health">💪 健康</option>
+            <option value="work">💼 仕事</option>
+            <option value="hobby">🎯 趣味</option>
+            <option value="other">✨ その他</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="addHabit()">追加</button>
+        <button class="btn btn-ghost" onclick="toggleAddForm()">キャンセル</button>
+      </div>
+      <button class="btn btn-ghost mt-8" onclick="toggleAddForm()" id="add-habit-btn">＋ 習慣を追加</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 習慣別 累積時間</div>
+      <div id="habit-totals"><!-- rendered by JS --></div>
+    </div>
+  </div>
+
+  <!-- ========== PAGE: カレンダー ========== -->
+  <div class="page" id="page-calendar">
+    <div class="card mb-16">
+      <div class="habit-filter" id="cal-filter"><!-- rendered by JS --></div>
+      <div class="cal-nav">
+        <button class="btn btn-ghost btn-sm" onclick="changeMonth(-1)">◀</button>
+        <span id="cal-month-label"></span>
+        <button class="btn btn-ghost btn-sm" onclick="changeMonth(1)">▶</button>
+      </div>
+      <div class="calendar-grid" id="calendar"><!-- rendered by JS --></div>
+    </div>
+    <div class="card" id="cal-detail" style="display:none">
+      <div class="card-title" id="cal-detail-title">詳細</div>
+      <div id="cal-detail-body"></div>
+    </div>
+  </div>
+
+  <!-- ========== PAGE: スケジュール ========== -->
+  <div class="page" id="page-schedule">
+    <div class="grid-2" style="gap:16px;align-items:start">
+
+      <!-- LEFT: 24h timeline -->
+      <div>
+        <div class="card mb-16">
+          <div class="schedule-date-nav">
+            <button class="btn btn-ghost btn-sm" onclick="changeScheduleDate(-1)">◀</button>
+            <span id="schedule-date-label"></span>
+            <button class="btn btn-ghost btn-sm" onclick="changeScheduleDate(1)">▶</button>
+          </div>
+        </div>
+
+        <div class="card mb-16">
+          <div class="card-title">➕ 行動を追加</div>
+          <div class="schedule-add-form">
+            <div class="form-group">
+              <label>カテゴリ</label>
+              <select id="sch-cat" onchange="updateDetailOptions()" style="width:100%">
+                <option value="work">💼 仕事</option>
+                <option value="study">📚 勉強</option>
+                <option value="meal">🍽️ 食事</option>
+                <option value="family">👨‍👩‍👧 家族</option>
+                <option value="move">🚶 移動</option>
+                <option value="free">🎮 自由時間</option>
+                <option value="sleep">😴 睡眠</option>
+                <option value="health">💪 健康</option>
+                <option value="other">✨ その他</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>詳細</label>
+              <select id="sch-detail" style="width:100%"></select>
+            </div>
+            <div class="form-group">
+              <label>開始</label>
+              <input type="time" id="sch-start" value="09:00" style="width:100%">
+            </div>
+            <div class="form-group">
+              <label>終了</label>
+              <input type="time" id="sch-end" value="10:00" style="width:100%">
+            </div>
+            <div class="full">
+              <button class="btn btn-primary" onclick="addScheduleItem()" style="width:100%">＋ 追加</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🕐 24時間タイムライン</div>
+          <div class="timeline24-wrap" id="timeline24-wrap">
+            <div class="timeline24" id="timeline24"><!-- rendered by JS --></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: charts & insights -->
+      <div>
+        <div class="card mb-16">
+          <div class="card-title">🥧 時間の内訳</div>
+          <div class="donut-wrap" id="donut-wrap"></div>
+          <div class="unallocated-bar" id="alloc-bar" style="margin-top:12px"></div>
+          <div id="free-alert" class="free-alert" style="display:none;margin-top:12px"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">💡 時間の振り返り</div>
+          <div id="time-insights"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Day Log Modal -->
+<div class="modal-overlay" id="log-modal">
+  <div class="modal">
+    <div class="modal-title" id="log-modal-title"></div>
+    <div id="log-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('log-modal')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================
+//  STATE
+// =============================
+const STORAGE_KEY = 'habitApp_v1';
+
+function loadState() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultState();
+  } catch(e) { return defaultState(); }
+}
+
+function defaultState() {
+  return {
+    habits: [
+      { id: 1, name: '読書', color: '#6366f1', goal: 30, cat: 'study' },
+      { id: 2, name: '運動', color: '#22c55e', goal: 30, cat: 'health' },
+      { id: 3, name: '英語学習', color: '#f59e0b', goal: 20, cat: 'study' },
+    ],
+    logs: {},       // { 'YYYY-MM-DD': { habitId: minutes, ... } }
+    schedule: {},   // { 'YYYY-MM-DD': [ { cat, label, start, end } ] }
+    nextId: 4,
+  };
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+let state = loadState();
+
+// =============================
+//  HELPERS
+// =============================
+const today = () => {
+  const d = new Date();
+  return fmtDate(d);
+};
+
+function fmtDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function parseDate(s) {
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+
+function dateLabel(d) {
+  const days = ['日','月','火','水','木','金','土'];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${days[d.getDay()]}）`;
+}
+
+function minToHM(min) {
+  if (!min) return '0分';
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  if (h > 0 && m > 0) return `${h}時間${m}分`;
+  if (h > 0) return `${h}時間`;
+  return `${m}分`;
+}
+
+function getStreak(habitId) {
+  let streak = 0;
+  let d = new Date();
+  while(true) {
+    const key = fmtDate(d);
+    if (state.logs[key] && state.logs[key][habitId] > 0) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function getTotalMinutes(habitId) {
+  let total = 0;
+  for (const key in state.logs) {
+    total += (state.logs[key][habitId] || 0);
+  }
+  return total;
+}
+
+function getTodayMinutes(habitId) {
+  const t = today();
+  return (state.logs[t] && state.logs[t][habitId]) || 0;
+}
+
+function setTodayMinutes(habitId, minutes) {
+  const t = today();
+  if (!state.logs[t]) state.logs[t] = {};
+  state.logs[t][habitId] = Number(minutes) || 0;
+  saveState();
+}
+
+function isTodayDone(habitId) {
+  return getTodayMinutes(habitId) > 0;
+}
+
+// =============================
+//  CATEGORY COLORS (schedule)
+// =============================
+const SCH_CATS = {
+  work:   { label: '💼 仕事',     color: '#6366f1' },
+  study:  { label: '📚 勉強',     color: '#f59e0b' },
+  meal:   { label: '🍽️ 食事',     color: '#22c55e' },
+  family: { label: '👨‍👩‍👧 家族',     color: '#ec4899' },
+  move:   { label: '🚶 移動',     color: '#94a3b8' },
+  free:   { label: '🎮 自由時間', color: '#ef4444' },
+  sleep:  { label: '😴 睡眠',     color: '#334155' },
+  health: { label: '💪 健康',     color: '#10b981' },
+  other:  { label: '✨ その他',   color: '#8b5cf6' },
+};
+
+const PRODUCTIVE_CATS = ['work', 'study', 'health'];
+const WASTE_CATS = ['free', 'move', 'other'];
+
+// =============================
+//  NAVIGATION
+// =============================
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (page === 'habits') renderHabits();
+  if (page === 'calendar') renderCalendar();
+  if (page === 'schedule') renderSchedule();
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// =============================
+//  PAGE 1: HABITS
+// =============================
+let addFormVisible = false;
+
+function toggleAddForm() {
+  addFormVisible = !addFormVisible;
+  document.getElementById('add-habit-form').style.display = addFormVisible ? 'flex' : 'none';
+  document.getElementById('add-habit-btn').textContent = addFormVisible ? '' : '＋ 習慣を追加';
+  document.getElementById('add-habit-btn').style.display = addFormVisible ? 'none' : '';
+}
+
+function addHabit() {
+  const name = document.getElementById('new-habit-name').value.trim();
+  if (!name) return;
+  const color = document.getElementById('new-habit-color').value;
+  const goal = parseInt(document.getElementById('new-habit-goal').value) || 30;
+  const cat = document.getElementById('new-habit-cat').value;
+  state.habits.push({ id: state.nextId++, name, color, goal, cat });
+  saveState();
+  document.getElementById('new-habit-name').value = '';
+  addFormVisible = false;
+  document.getElementById('add-habit-form').style.display = 'none';
+  document.getElementById('add-habit-btn').style.display = '';
+  document.getElementById('add-habit-btn').textContent = '＋ 習慣を追加';
+  renderHabits();
+}
+
+function deleteHabit(id) {
+  if (!confirm('この習慣を削除しますか？')) return;
+  state.habits = state.habits.filter(h => h.id !== id);
+  saveState();
+  renderHabits();
+}
+
+function toggleDone(habitId) {
+  const cur = getTodayMinutes(habitId);
+  const habit = state.habits.find(h => h.id === habitId);
+  if (cur > 0) {
+    setTodayMinutes(habitId, 0);
+  } else {
+    setTodayMinutes(habitId, habit.goal || 30);
+  }
+  renderHabits();
+}
+
+function updateTime(habitId, val) {
+  setTodayMinutes(habitId, parseInt(val) || 0);
+  renderHabits();
+}
+
+function renderHabits() {
+  const todayStr = today();
+  document.getElementById('today-label').textContent = dateLabel(new Date());
+
+  // Stats
+  const totalHabits = state.habits.length;
+  const doneToday = state.habits.filter(h => isTodayDone(h.id)).length;
+  const maxStreak = state.habits.reduce((m, h) => Math.max(m, getStreak(h.id)), 0);
+  const totalMins = state.habits.reduce((m, h) => m + getTotalMinutes(h.id), 0);
+
+  document.getElementById('stat-cards').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-num">${doneToday}/${totalHabits}</div>
+      <div class="stat-label">今日の達成数</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--warning)">🔥 ${maxStreak}日</div>
+      <div class="stat-label">最長連続記録</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--success)">${minToHM(totalMins)}</div>
+      <div class="stat-label">総累積時間</div>
+    </div>
+  `;
+
+  // Habit list
+  let html = '';
+  if (state.habits.length === 0) {
+    html = '<div style="color:var(--text2);text-align:center;padding:24px">習慣を追加してください</div>';
+  }
+  for (const h of state.habits) {
+    const mins = getTodayMinutes(h.id);
+    const streak = getStreak(h.id);
+    const total = getTotalMinutes(h.id);
+    const done = mins > 0;
+    const pct = h.goal ? Math.min(100, Math.round(mins / h.goal * 100)) : 0;
+    html += `
+      <div class="habit-row" id="habit-row-${h.id}">
+        <button class="done-btn ${done ? 'done' : ''}" onclick="toggleDone(${h.id})">
+          ${done ? '✓' : ''}
+        </button>
+        <div class="habit-color-dot" style="background:${h.color}"></div>
+        <div class="habit-name" style="${done ? 'text-decoration:line-through;color:var(--text2)' : ''}">${h.name}</div>
+        <div class="habit-streak">🔥 ${streak}日</div>
+        <div class="time-input-wrap">
+          <input type="number" min="0" step="5" value="${mins}" style="width:60px"
+            onchange="updateTime(${h.id}, this.value)" title="今日の実績（分）">
+          <span style="font-size:12px;color:var(--text2)">分</span>
+        </div>
+        <div class="habit-total" style="color:${h.color}">${minToHM(total)}</div>
+        <button class="btn btn-danger btn-sm" onclick="deleteHabit(${h.id})">削除</button>
+      </div>
+      <div style="margin:-6px 0 10px 58px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${h.color};border-radius:2px;transition:width 0.4s"></div>
+      </div>
+    `;
+  }
+  document.getElementById('habit-list').innerHTML = html;
+
+  // Totals
+  let totHtml = '';
+  const maxTotal = Math.max(...state.habits.map(h => getTotalMinutes(h.id)), 1);
+  for (const h of state.habits) {
+    const total = getTotalMinutes(h.id);
+    const pct = Math.round(total / maxTotal * 100);
+    totHtml += `
+      <div style="margin-bottom:12px">
+        <div class="flex flex-gap flex-between" style="margin-bottom:4px">
+          <div class="flex flex-gap">
+            <div class="habit-color-dot" style="background:${h.color}"></div>
+            <span style="font-size:14px">${h.name}</span>
+          </div>
+          <span style="font-size:13px;color:${h.color};font-weight:600">${minToHM(total)}</span>
+        </div>
+        <div style="height:8px;background:var(--surface2);border-radius:4px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${h.color};border-radius:4px;transition:width 0.5s"></div>
+        </div>
+      </div>
+    `;
+  }
+  if (!totHtml) totHtml = '<div style="color:var(--text2);font-size:13px">まだ記録がありません</div>';
+  document.getElementById('habit-totals').innerHTML = totHtml;
+}
+
+// =============================
+//  PAGE 2: CALENDAR
+// =============================
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calFilterId = null; // null = all
+
+function changeMonth(delta) {
+  calMonth += delta;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  // Filter chips
+  let fHtml = `
+    <button class="filter-chip ${calFilterId === null ? 'active' : ''}"
+      style="${calFilterId === null ? 'background:var(--accent)' : ''}"
+      onclick="setCalFilter(null)">すべて</button>
+  `;
+  for (const h of state.habits) {
+    fHtml += `
+      <button class="filter-chip ${calFilterId === h.id ? 'active' : ''}"
+        style="${calFilterId === h.id ? `background:${h.color}` : ''}"
+        onclick="setCalFilter(${h.id})">
+        <span class="chip-dot" style="background:${h.color}"></span>
+        ${h.name}
+      </button>
+    `;
+  }
+  document.getElementById('cal-filter').innerHTML = fHtml;
+
+  // Month label
+  document.getElementById('cal-month-label').textContent = `${calYear}年${calMonth+1}月`;
+
+  // Calendar
+  const weekDays = ['日','月','火','水','木','金','土'];
+  let html = weekDays.map(d => `<div class="cal-header">${d}</div>`).join('');
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const todayStr = today();
+
+  for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayLogs = state.logs[dateStr] || {};
+    const isToday = dateStr === todayStr;
+
+    let dots = '';
+    const habitsToShow = calFilterId
+      ? state.habits.filter(h => h.id === calFilterId)
+      : state.habits;
+    for (const h of habitsToShow) {
+      if (dayLogs[h.id] > 0) {
+        dots += `<div class="cal-dot" style="background:${h.color}"></div>`;
+      }
+    }
+    const allDone = habitsToShow.length > 0 && habitsToShow.every(h => dayLogs[h.id] > 0);
+    const bgStyle = allDone ? `background:rgba(99,102,241,0.25)` : '';
+
+    html += `
+      <div class="cal-day ${isToday ? 'today' : ''}" style="${bgStyle}" onclick="showDayDetail('${dateStr}')">
+        <span class="cal-day-num">${d}</span>
+        <div class="cal-dots">${dots}</div>
+      </div>
+    `;
+  }
+  document.getElementById('calendar').innerHTML = html;
+}
+
+function setCalFilter(id) {
+  calFilterId = id;
+  renderCalendar();
+}
+
+function showDayDetail(dateStr) {
+  const d = parseDate(dateStr);
+  const dayLogs = state.logs[dateStr] || {};
+
+  document.getElementById('cal-detail').style.display = 'block';
+  document.getElementById('cal-detail-title').textContent = dateLabel(d);
+
+  let html = '';
+  for (const h of state.habits) {
+    const mins = dayLogs[h.id] || 0;
+    html += `
+      <div class="flex flex-gap flex-between" style="padding:8px;border-radius:8px;background:var(--surface2);margin-bottom:6px">
+        <div class="flex flex-gap">
+          <div class="habit-color-dot" style="background:${h.color}"></div>
+          <span style="font-size:14px">${h.name}</span>
+        </div>
+        <span style="font-size:13px;color:${mins>0?h.color:'var(--text2)'}">${mins>0 ? minToHM(mins) : '未実施'}</span>
+      </div>
+    `;
+  }
+  if (!html) html = '<div style="color:var(--text2)">記録なし</div>';
+  document.getElementById('cal-detail-body').innerHTML = html;
+
+  document.getElementById('cal-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// =============================
+//  PAGE 3: SCHEDULE
+// =============================
+const SCH_DETAILS = {
+  work:   ['会議', 'メール対応', '資料作成', 'プレゼン', '集中作業', '打ち合わせ', 'その他'],
+  study:  ['読書', '英語学習', '資格勉強', 'オンライン講座', '復習・まとめ', 'その他'],
+  meal:   ['朝食', '昼食', '夕食', '間食', 'カフェ・休憩', 'その他'],
+  family: ['子供の世話', '家事', '会話・団欒', '家族外出', 'その他'],
+  move:   ['通勤', '帰宅', '外出・移動', 'その他'],
+  free:   ['SNS・スマホ', 'ゲーム', '動画視聴', '読書・漫画', '散歩・リフレッシュ', 'その他'],
+  sleep:  ['就寝', '昼寝', 'その他'],
+  health: ['運動・ジム', 'ヨガ・ストレッチ', 'ランニング', 'その他'],
+  other:  ['準備・身支度', 'その他'],
+};
+
+let scheduleDate = today();
+
+function updateDetailOptions() {
+  const cat = document.getElementById('sch-cat').value;
+  const details = SCH_DETAILS[cat] || ['その他'];
+  const sel = document.getElementById('sch-detail');
+  sel.innerHTML = details.map(d => `<option value="${d}">${d}</option>`).join('');
+}
+
+function changeScheduleDate(delta) {
+  const d = parseDate(scheduleDate);
+  d.setDate(d.getDate() + delta);
+  scheduleDate = fmtDate(d);
+  renderSchedule();
+}
+
+function addScheduleItem() {
+  const cat = document.getElementById('sch-cat').value;
+  const detail = document.getElementById('sch-detail').value;
+  const start = document.getElementById('sch-start').value;
+  const end = document.getElementById('sch-end').value;
+  if (!start || !end || start >= end) { alert('終了時刻は開始時刻より後にしてください'); return; }
+  if (!state.schedule[scheduleDate]) state.schedule[scheduleDate] = [];
+  state.schedule[scheduleDate].push({ cat, label: detail, start, end });
+  state.schedule[scheduleDate].sort((a,b) => a.start.localeCompare(b.start));
+  saveState();
+  renderSchedule();
+}
+
+function deleteScheduleItem(idx) {
+  state.schedule[scheduleDate].splice(idx, 1);
+  saveState();
+  renderSchedule();
+}
+
+function timeToMin(t) {
+  const [h,m] = t.split(':').map(Number);
+  return h*60 + m;
+}
+
+const HOUR_H = 48; // px per hour
+
+function renderSchedule() {
+  document.getElementById('schedule-date-label').textContent = dateLabel(parseDate(scheduleDate));
+
+  const items = state.schedule[scheduleDate] || [];
+
+  // Build 24-hour grid rows
+  let rowsHtml = '';
+  for (let h = 0; h < 24; h++) {
+    const label = String(h).padStart(2,'0') + ':00';
+    rowsHtml += `
+      <div class="hour-row">
+        <div class="hour-label">${label}</div>
+        <div class="hour-track"></div>
+      </div>`;
+  }
+
+  // Build activity blocks
+  let blocksHtml = '';
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    const cat = SCH_CATS[it.cat] || SCH_CATS.other;
+    const startMin = timeToMin(it.start);
+    const endMin   = timeToMin(it.end);
+    const dur = endMin - startMin;
+    const top  = (startMin / 60) * HOUR_H;
+    const height = Math.max((dur / 60) * HOUR_H - 2, 18);
+    const icon = cat.label.split(' ')[0];
+    blocksHtml += `
+      <div class="act-block" style="top:${top}px;height:${height}px;background:${cat.color}cc;color:#fff"
+           title="${cat.label} / ${it.label}  ${it.start}〜${it.end}">
+        <span class="act-name">${icon} ${it.label}</span>
+        <span class="act-dur">${minToHM(dur)}</span>
+        <button class="act-del" onclick="deleteScheduleItem(${i})" title="削除">✕</button>
+      </div>`;
+  }
+
+  // Current-time line (only today)
+  let nowLineHtml = '';
+  if (scheduleDate === today()) {
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const nowTop = (nowMin / 60) * HOUR_H;
+    nowLineHtml = `<div class="now-line" style="top:${nowTop}px" id="now-line"></div>`;
+  }
+
+  document.getElementById('timeline24').innerHTML = `
+    ${rowsHtml}
+    <div class="act-blocks" id="act-blocks">
+      ${nowLineHtml}
+      ${blocksHtml}
+    </div>`;
+
+  // Scroll to 6am on initial render (or near now-line)
+  const wrap = document.getElementById('timeline24-wrap');
+  const scrollToMin = scheduleDate === today()
+    ? Math.max(0, new Date().getHours() * 60 - 60)
+    : 6 * 60;
+  wrap.scrollTop = (scrollToMin / 60) * HOUR_H;
+
+  renderDonut(items);
+}
+
+function renderDonut(items) {
+  // Aggregate by category
+  const totals = {};
+  let totalMin = 0;
+  for (const it of items) {
+    const dur = timeToMin(it.end) - timeToMin(it.start);
+    totals[it.cat] = (totals[it.cat] || 0) + dur;
+    totalMin += dur;
+  }
+
+  const DAY_MIN = 24 * 60;
+  const unalloc = DAY_MIN - totalMin;
+
+  // Build donut
+  const R = 70, CX = 80, CY = 80, STROKE = 22;
+  const circumference = 2 * Math.PI * R;
+  const cats = Object.keys(totals).sort((a,b) => totals[b]-totals[a]);
+
+  let svgPaths = '';
+  let legendHtml = '';
+  let offset = 0;
+  for (const cat of cats) {
+    const c = SCH_CATS[cat] || SCH_CATS.other;
+    const frac = totals[cat] / DAY_MIN;
+    const dash = frac * circumference;
+    const gap = circumference - dash;
+    const pct = Math.round(totals[cat] / totalMin * 100) || 0;
+    svgPaths += `
+      <circle cx="${CX}" cy="${CY}" r="${R}"
+        fill="none" stroke="${c.color}" stroke-width="${STROKE}"
+        stroke-dasharray="${dash} ${gap}"
+        stroke-dashoffset="${-offset}"
+        transform="rotate(-90 ${CX} ${CY})"
+        style="transition: stroke-dasharray 0.5s"/>
+    `;
+    offset += dash;
+    legendHtml += `
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${c.color}"></div>
+        <span style="flex:1;font-size:13px">${c.label}</span>
+        <span style="font-size:12px;color:var(--text2);min-width:44px;text-align:right">${minToHM(totals[cat])}</span>
+        <span class="legend-pct">${pct}%</span>
+      </div>
+    `;
+  }
+
+  const allocPct = totalMin / DAY_MIN;
+  const center = totalMin > 0
+    ? `<text x="${CX}" y="${CY}" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12" font-weight="bold">${Math.round(allocPct*100)}%<tspan x="${CX}" dy="16" font-size="10" fill="#94a3b8">使用</tspan></text>`
+    : `<text x="${CX}" y="${CY}" text-anchor="middle" dominant-baseline="middle" fill="#94a3b8" font-size="11">未入力</text>`;
+
+  document.getElementById('donut-wrap').innerHTML = `
+    <svg class="donut-svg" width="160" height="160" viewBox="0 0 160 160">
+      <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="var(--surface2)" stroke-width="${STROKE}"/>
+      ${svgPaths}
+      ${center}
+    </svg>
+    <div class="donut-legend">${legendHtml || '<div style="color:var(--text2);font-size:13px">予定を追加してください</div>'}</div>
+  `;
+
+  // Allocation bar
+  let barHtml = '';
+  for (const cat of cats) {
+    const c = SCH_CATS[cat] || SCH_CATS.other;
+    const pct = Math.round(totals[cat] / DAY_MIN * 100);
+    barHtml += `<div class="unallocated-seg" style="width:${pct}%;background:${c.color}" title="${c.label}: ${minToHM(totals[cat])}"></div>`;
+  }
+  barHtml += `<div class="unallocated-seg" style="width:${Math.round(unalloc/DAY_MIN*100)}%;background:var(--surface2)" title="未割当: ${minToHM(unalloc)}"></div>`;
+  document.getElementById('alloc-bar').innerHTML = barHtml;
+
+  // Free-time alert
+  const freeMin = totals.free || 0;
+  const freePct = totalMin > 0 ? freeMin / totalMin : 0;
+  const alertEl = document.getElementById('free-alert');
+  if (totalMin === 0) {
+    alertEl.style.display = 'none';
+  } else {
+    alertEl.style.display = 'block';
+    if (freePct > 0.3) {
+      alertEl.className = 'free-alert warn';
+      alertEl.innerHTML = `⚠️ 自由時間が全体の ${Math.round(freePct*100)}%（${minToHM(freeMin)}）を占めています。もっと有効活用できますか？`;
+    } else if (freePct < 0.05 && totalMin > 480) {
+      alertEl.className = 'free-alert danger';
+      alertEl.innerHTML = `🚨 自由時間がほとんどありません（${minToHM(freeMin)}）。燃え尽きに注意してください！`;
+    } else {
+      alertEl.className = 'free-alert good';
+      alertEl.innerHTML = `✅ バランスの取れたスケジュールです！自由時間: ${minToHM(freeMin)}`;
+    }
+  }
+
+  // Insights
+  let insightsHtml = '';
+  const prodMin = PRODUCTIVE_CATS.reduce((s, c) => s + (totals[c]||0), 0);
+  const wasteMin = WASTE_CATS.reduce((s, c) => s + (totals[c]||0), 0);
+  if (totalMin > 0) {
+    insightsHtml += `
+      <div style="margin-bottom:12px">
+        <div class="flex flex-between" style="font-size:13px;margin-bottom:4px">
+          <span>⚡ 生産的時間</span>
+          <span style="color:var(--success);font-weight:600">${minToHM(prodMin)} (${Math.round(prodMin/totalMin*100)}%)</span>
+        </div>
+        <div class="flex flex-between" style="font-size:13px;margin-bottom:4px">
+          <span>🎮 浪費リスク時間</span>
+          <span style="color:${wasteMin/totalMin>0.25?'var(--danger)':'var(--text2)'};font-weight:600">${minToHM(wasteMin)} (${Math.round(wasteMin/totalMin*100)}%)</span>
+        </div>
+        <div class="flex flex-between" style="font-size:13px">
+          <span>📍 記録した時間</span>
+          <span style="color:var(--text2)">${minToHM(totalMin)} / 24時間</span>
+        </div>
+      </div>
+    `;
+
+    // Top categories
+    const topCat = cats[0];
+    if (topCat) {
+      const c = SCH_CATS[topCat];
+      insightsHtml += `<div style="font-size:13px;padding:10px;background:var(--surface2);border-radius:8px;border-left:3px solid ${c.color}">
+        最も多い活動: <strong>${c.label}</strong> (${minToHM(totals[topCat])})
+      </div>`;
+    }
+
+    if (totals.move && totals.move > 120) {
+      insightsHtml += `<div style="font-size:13px;padding:10px;background:rgba(239,68,68,0.1);border-radius:8px;margin-top:8px;color:var(--danger);border-left:3px solid var(--danger)">
+        🚶 移動時間が ${minToHM(totals.move)} あります。リモートワークや近距離化で削減できますか？
+      </div>`;
+    }
+  } else {
+    insightsHtml = '<div style="color:var(--text2);font-size:13px">予定を追加すると分析が表示されます</div>';
+  }
+  document.getElementById('time-insights').innerHTML = insightsHtml;
+}
+
+// =============================
+//  INIT
+// =============================
+updateDetailOptions();
+renderHabits();
+</script>
+</body>
+</html>
