@@ -41,6 +41,7 @@
     z-index: 100;
   }
   nav .logo { font-size: 20px; font-weight: 700; color: var(--accent2); margin-right: auto; }
+  nav .logo-gmail { color: #ea4335; }
   .tab-btn {
     background: none;
     border: none;
@@ -468,10 +469,154 @@
   .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 
   /* ===========================
+     PAGE 4: Gmail返信ツール
+  =========================== */
+  .gmail-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .gmail-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .gmail-tone-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .tone-btn {
+    padding: 8px 6px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    text-align: center;
+    transition: all 0.2s;
+    line-height: 1.4;
+  }
+  .tone-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .tone-btn:hover:not(.active) { border-color: var(--accent2); color: var(--text); }
+  .tone-btn .tone-icon { font-size: 16px; display: block; margin-bottom: 3px; }
+
+  .gmail-body-input {
+    width: 100%;
+    min-height: 220px;
+    resize: vertical;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .gmail-reply-output {
+    width: 100%;
+    min-height: 240px;
+    resize: vertical;
+    font-size: 13px;
+    line-height: 1.6;
+    background: rgba(99,102,241,0.07);
+    border-color: var(--accent);
+  }
+  .gmail-generate-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+  }
+  .gmail-generate-btn:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+  .gmail-generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .gmail-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+  .apikey-wrap {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .apikey-wrap input { flex: 1; font-family: monospace; font-size: 12px; }
+
+  .gmail-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .gmail-meta-grid .full { grid-column: 1 / -1; }
+
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .gmail-status {
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-top: 10px;
+    display: none;
+  }
+  .gmail-status.error { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); display: block; }
+  .gmail-status.success { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); display: block; }
+
+  .copy-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: var(--success);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: transform 0.3s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .copy-toast.show { transform: translateX(-50%) translateY(0); }
+
+  .apikey-toggle {
+    background: none;
+    border: none;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 12px;
+    text-decoration: underline;
+    padding: 0;
+    font-family: inherit;
+  }
+  .apikey-toggle:hover { color: var(--text); }
+
+  /* ===========================
      RESPONSIVE
   =========================== */
   @media (max-width: 640px) {
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .gmail-layout { grid-template-columns: 1fr; }
+    .gmail-meta-grid { grid-template-columns: 1fr; }
     nav { padding: 0 12px; }
     .tab-btn { padding: 6px 10px; font-size: 13px; }
     .donut-wrap { flex-direction: column; }
@@ -486,6 +631,7 @@
   <button class="tab-btn active" onclick="showPage('habits')">📋 習慣</button>
   <button class="tab-btn" onclick="showPage('calendar')">📅 カレンダー</button>
   <button class="tab-btn" onclick="showPage('schedule')">⏱️ スケジュール</button>
+  <button class="tab-btn" onclick="showPage('gmail')">📧 Gmail返信</button>
 </nav>
 
 <main>
@@ -626,7 +772,144 @@
     </div>
   </div>
 
+  <!-- ========== PAGE: Gmail返信 ========== -->
+  <div class="page" id="page-gmail">
+
+    <!-- API Key 設定 -->
+    <div class="card mb-16" id="apikey-card">
+      <div class="card-title" style="cursor:pointer;user-select:none" onclick="toggleApiKeyPanel()">
+        🔑 Claude API設定
+        <span id="apikey-status-badge" style="margin-left:auto;font-size:12px;padding:3px 10px;border-radius:12px;font-weight:500;background:rgba(239,68,68,0.2);color:var(--danger)">未設定</span>
+        <span id="apikey-toggle-icon" style="font-size:12px;color:var(--text2);margin-left:8px">▼</span>
+      </div>
+      <div id="apikey-panel">
+        <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Anthropic Claude APIキーを入力してください。キーはブラウザのlocalStorageにのみ保存されます。</p>
+        <div class="apikey-wrap">
+          <input type="password" id="apikey-input" placeholder="sk-ant-..." autocomplete="off">
+          <button class="btn btn-ghost btn-sm" onclick="toggleApiKeyVisibility()" id="apikey-eye-btn">👁</button>
+          <button class="btn btn-primary btn-sm" onclick="saveApiKey()">保存</button>
+          <button class="btn btn-danger btn-sm" onclick="clearApiKey()">削除</button>
+        </div>
+        <p style="font-size:11px;color:var(--text2);margin-top:8px">
+          APIキーは <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent2)">console.anthropic.com</a> で取得できます。
+        </p>
+      </div>
+    </div>
+
+    <div class="gmail-layout">
+
+      <!-- LEFT: 入力フォーム -->
+      <div>
+        <div class="card mb-16">
+          <div class="card-title">📥 受信メール</div>
+
+          <div class="gmail-meta-grid">
+            <div class="form-group">
+              <label>差出人（名前）</label>
+              <input type="text" id="gmail-sender" placeholder="例: 山田 太郎" style="width:100%">
+            </div>
+            <div class="form-group">
+              <label>件名</label>
+              <input type="text" id="gmail-subject" placeholder="例: ご提案の件について" style="width:100%">
+            </div>
+            <div class="form-group full">
+              <label>メール本文</label>
+              <textarea class="gmail-body-input" id="gmail-body" placeholder="受信したメールの本文をここに貼り付けてください..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-16">
+          <div class="card-title">⚙️ 返信スタイル</div>
+
+          <div class="gmail-section-title">トーン</div>
+          <div class="gmail-tone-grid" id="tone-grid">
+            <button class="tone-btn active" data-tone="formal" onclick="selectTone(this)">
+              <span class="tone-icon">🎩</span>丁寧・敬語
+            </button>
+            <button class="tone-btn" data-tone="business" onclick="selectTone(this)">
+              <span class="tone-icon">💼</span>ビジネス
+            </button>
+            <button class="tone-btn" data-tone="casual" onclick="selectTone(this)">
+              <span class="tone-icon">😊</span>カジュアル
+            </button>
+            <button class="tone-btn" data-tone="concise" onclick="selectTone(this)">
+              <span class="tone-icon">⚡</span>簡潔に
+            </button>
+            <button class="tone-btn" data-tone="detailed" onclick="selectTone(this)">
+              <span class="tone-icon">📝</span>詳細に
+            </button>
+            <button class="tone-btn" data-tone="decline" onclick="selectTone(this)">
+              <span class="tone-icon">🙏</span>丁重にお断り
+            </button>
+          </div>
+
+          <div class="gmail-section-title">言語</div>
+          <div style="display:flex;gap:8px;margin-bottom:14px">
+            <button class="tone-btn active" data-lang="ja" onclick="selectLang(this)" style="flex:1">🇯🇵 日本語</button>
+            <button class="tone-btn" data-lang="en" onclick="selectLang(this)" style="flex:1">🇺🇸 English</button>
+          </div>
+
+          <div class="form-group" style="margin-bottom:14px">
+            <label>自分の名前（署名用）</label>
+            <input type="text" id="gmail-myname" placeholder="例: 鈴木 花子" style="width:100%">
+          </div>
+
+          <div class="form-group" style="margin-bottom:16px">
+            <label>追加の指示（任意）</label>
+            <input type="text" id="gmail-extra" placeholder="例: 来週の打ち合わせを提案する" style="width:100%">
+          </div>
+
+          <button class="gmail-generate-btn" id="generate-btn" onclick="generateReply()">
+            <span id="generate-btn-icon">✨</span>
+            <span id="generate-btn-text">返信文を生成する</span>
+          </button>
+          <div class="gmail-status" id="gmail-status"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: 生成結果 -->
+      <div>
+        <div class="card" id="reply-output-card">
+          <div class="card-title">
+            📤 生成された返信文
+            <span id="reply-model-badge" style="margin-left:auto;font-size:11px;color:var(--text2);font-weight:400"></span>
+          </div>
+          <div id="reply-placeholder" style="color:var(--text2);font-size:13px;padding:20px 0;text-align:center">
+            <div style="font-size:36px;margin-bottom:12px">✉️</div>
+            <div>左のフォームにメールを入力して<br>「返信文を生成する」を押してください</div>
+          </div>
+          <textarea class="gmail-reply-output" id="gmail-reply" style="display:none"></textarea>
+          <div class="gmail-actions" id="reply-actions" style="display:none">
+            <button class="btn btn-primary" onclick="copyReply()">📋 コピー</button>
+            <button class="btn btn-ghost" onclick="generateReply()">🔄 再生成</button>
+            <button class="btn btn-ghost" onclick="clearReply()">🗑️ クリア</button>
+          </div>
+
+          <!-- 使い方ガイド -->
+          <div id="gmail-guide" class="mt-16" style="border-top:1px solid var(--border);padding-top:14px">
+            <div class="gmail-section-title">使い方</div>
+            <ol style="font-size:12px;color:var(--text2);line-height:2;padding-left:18px">
+              <li>Claude APIキーを設定する</li>
+              <li>受信したメールの本文を貼り付ける</li>
+              <li>返信のトーンと言語を選ぶ</li>
+              <li>「返信文を生成する」をクリック</li>
+              <li>生成された文章をコピーしてGmailに貼り付ける</li>
+            </ol>
+            <div style="margin-top:10px;font-size:11px;color:var(--text2);padding:8px;background:var(--surface2);border-radius:6px">
+              使用モデル: <strong style="color:var(--accent2)">claude-haiku-4-5</strong>（高速・低コスト）
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </main>
+
+<!-- Copy Toast -->
+<div class="copy-toast" id="copy-toast">📋 クリップボードにコピーしました</div>
 
 <!-- Day Log Modal -->
 <div class="modal-overlay" id="log-modal">
@@ -769,6 +1052,7 @@ function showPage(page) {
   if (page === 'habits') renderHabits();
   if (page === 'calendar') renderCalendar();
   if (page === 'schedule') renderSchedule();
+  if (page === 'gmail') initGmailPage();
 }
 
 function closeModal(id) {
@@ -1263,6 +1547,278 @@ function renderDonut(items) {
     insightsHtml = '<div style="color:var(--text2);font-size:13px">予定を追加すると分析が表示されます</div>';
   }
   document.getElementById('time-insights').innerHTML = insightsHtml;
+}
+
+// =============================
+//  PAGE 4: GMAIL AUTO-REPLY
+// =============================
+const GMAIL_STORAGE_KEY = 'gmailReplyTool_v1';
+
+let gmailState = {
+  tone: 'formal',
+  lang: 'ja',
+  apiKeyVisible: false,
+  apikeyPanelOpen: true,
+};
+
+function loadGmailPrefs() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(GMAIL_STORAGE_KEY)) || {};
+    if (saved.tone) gmailState.tone = saved.tone;
+    if (saved.lang) gmailState.lang = saved.lang;
+    if (saved.myname !== undefined) document.getElementById('gmail-myname').value = saved.myname;
+  } catch(e) {}
+}
+
+function saveGmailPrefs() {
+  localStorage.setItem(GMAIL_STORAGE_KEY, JSON.stringify({
+    tone: gmailState.tone,
+    lang: gmailState.lang,
+    myname: document.getElementById('gmail-myname').value,
+  }));
+}
+
+// --- API Key management ---
+function getApiKey() {
+  return localStorage.getItem('claude_api_key') || '';
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apikey-input').value.trim();
+  if (!key) { showGmailStatus('APIキーを入力してください', 'error'); return; }
+  if (!key.startsWith('sk-ant-')) { showGmailStatus('APIキーの形式が正しくありません（sk-ant- で始まるキーを入力してください）', 'error'); return; }
+  localStorage.setItem('claude_api_key', key);
+  updateApiKeyBadge();
+  showGmailStatus('APIキーを保存しました', 'success');
+  setTimeout(() => {
+    gmailState.apikeyPanelOpen = false;
+    document.getElementById('apikey-panel').style.display = 'none';
+    document.getElementById('apikey-toggle-icon').textContent = '▶';
+  }, 800);
+}
+
+function clearApiKey() {
+  localStorage.removeItem('claude_api_key');
+  document.getElementById('apikey-input').value = '';
+  updateApiKeyBadge();
+  showGmailStatus('APIキーを削除しました', 'error');
+}
+
+function toggleApiKeyPanel() {
+  gmailState.apikeyPanelOpen = !gmailState.apikeyPanelOpen;
+  document.getElementById('apikey-panel').style.display = gmailState.apikeyPanelOpen ? 'block' : 'none';
+  document.getElementById('apikey-toggle-icon').textContent = gmailState.apikeyPanelOpen ? '▼' : '▶';
+}
+
+function toggleApiKeyVisibility() {
+  gmailState.apiKeyVisible = !gmailState.apiKeyVisible;
+  const inp = document.getElementById('apikey-input');
+  inp.type = gmailState.apiKeyVisible ? 'text' : 'password';
+  document.getElementById('apikey-eye-btn').textContent = gmailState.apiKeyVisible ? '🙈' : '👁';
+}
+
+function updateApiKeyBadge() {
+  const badge = document.getElementById('apikey-status-badge');
+  const hasKey = !!getApiKey();
+  badge.textContent = hasKey ? '設定済み' : '未設定';
+  badge.style.background = hasKey ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)';
+  badge.style.color = hasKey ? 'var(--success)' : 'var(--danger)';
+  if (hasKey) {
+    document.getElementById('apikey-input').value = getApiKey();
+    gmailState.apikeyPanelOpen = false;
+    document.getElementById('apikey-panel').style.display = 'none';
+    document.getElementById('apikey-toggle-icon').textContent = '▶';
+  }
+}
+
+// --- Tone / Lang selection ---
+function selectTone(btn) {
+  document.querySelectorAll('#tone-grid .tone-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  gmailState.tone = btn.dataset.tone;
+  saveGmailPrefs();
+}
+
+function selectLang(btn) {
+  btn.closest('div').querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  gmailState.lang = btn.dataset.lang;
+  saveGmailPrefs();
+}
+
+// --- Status display ---
+function showGmailStatus(msg, type) {
+  const el = document.getElementById('gmail-status');
+  el.textContent = msg;
+  el.className = `gmail-status ${type}`;
+  if (type === 'success') {
+    setTimeout(() => { el.className = 'gmail-status'; }, 3000);
+  }
+}
+
+// --- Generate reply ---
+const TONE_PROMPTS = {
+  formal:   '非常に丁寧な敬語を使い、フォーマルなビジネスメールとして返信してください。',
+  business: '適切なビジネス敬語を使い、簡潔でプロフェッショナルな返信を書いてください。',
+  casual:   'カジュアルで親しみやすいトーンで返信してください。ただし失礼にならないよう注意してください。',
+  concise:  '要点のみを簡潔に、3文以内で返信してください。',
+  detailed: '丁寧に、詳細な説明を加えながら返信してください。必要に応じて箇条書きも使ってください。',
+  decline:  '相手の気持ちを尊重しながら、丁重にお断りする返信を書いてください。',
+};
+
+const TONE_PROMPTS_EN = {
+  formal:   'Write a very formal and polite reply using professional business English.',
+  business: 'Write a concise, professional business reply.',
+  casual:   'Write a friendly and casual reply while remaining respectful.',
+  concise:  'Reply in 3 sentences or fewer, focusing only on the key point.',
+  detailed: 'Write a detailed, thorough reply. Use bullet points where appropriate.',
+  decline:  'Politely and respectfully decline while being considerate of the sender.',
+};
+
+async function generateReply() {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    showGmailStatus('先にAPIキーを設定してください（上の「Claude API設定」パネルから）', 'error');
+    gmailState.apikeyPanelOpen = true;
+    document.getElementById('apikey-panel').style.display = 'block';
+    document.getElementById('apikey-toggle-icon').textContent = '▼';
+    return;
+  }
+
+  const body = document.getElementById('gmail-body').value.trim();
+  if (!body) { showGmailStatus('メール本文を入力してください', 'error'); return; }
+
+  const sender = document.getElementById('gmail-sender').value.trim();
+  const subject = document.getElementById('gmail-subject').value.trim();
+  const myname  = document.getElementById('gmail-myname').value.trim();
+  const extra   = document.getElementById('gmail-extra').value.trim();
+  const isJa    = gmailState.lang === 'ja';
+
+  // Build prompt
+  const toneInstruction = isJa
+    ? (TONE_PROMPTS[gmailState.tone] || TONE_PROMPTS.formal)
+    : (TONE_PROMPTS_EN[gmailState.tone] || TONE_PROMPTS_EN.formal);
+
+  const langInstruction = isJa
+    ? '必ず日本語で返信文を書いてください。'
+    : 'Write the reply in English only.';
+
+  const systemPrompt = `あなたはメール返信の専門家です。受信メールの内容を分析し、適切な返信文を生成します。
+${langInstruction}
+${toneInstruction}
+返信文のみを出力してください。説明や前置きは不要です。件名（Subject:）も含めないでください。`;
+
+  const userContent = [
+    subject  ? `件名: ${subject}` : '',
+    sender   ? `差出人: ${sender}` : '',
+    `\nメール本文:\n${body}`,
+    myname   ? `\n返信者の名前: ${myname}` : '',
+    extra    ? `\n追加指示: ${extra}` : '',
+  ].filter(Boolean).join('\n');
+
+  // UI loading state
+  const genBtn = document.getElementById('generate-btn');
+  genBtn.disabled = true;
+  document.getElementById('generate-btn-icon').innerHTML = '<span class="spinner"></span>';
+  document.getElementById('generate-btn-text').textContent = '生成中...';
+  document.getElementById('gmail-status').className = 'gmail-status';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        system: [
+          {
+            type: 'text',
+            text: systemPrompt,
+            cache_control: { type: 'ephemeral' },
+          }
+        ],
+        messages: [
+          { role: 'user', content: userContent }
+        ],
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const msg = err?.error?.message || `APIエラー: ${res.status}`;
+      throw new Error(msg);
+    }
+
+    const data = await res.json();
+    const replyText = data.content?.[0]?.text || '';
+
+    if (!replyText) throw new Error('返信文を生成できませんでした');
+
+    // Show result
+    document.getElementById('reply-placeholder').style.display = 'none';
+    document.getElementById('gmail-guide').style.display = 'none';
+    const replyEl = document.getElementById('gmail-reply');
+    replyEl.style.display = 'block';
+    replyEl.value = replyText;
+    document.getElementById('reply-actions').style.display = 'flex';
+
+    const inputTokens  = data.usage?.input_tokens  || 0;
+    const outputTokens = data.usage?.output_tokens || 0;
+    document.getElementById('reply-model-badge').textContent =
+      `claude-haiku-4-5 · ${inputTokens}入力 / ${outputTokens}出力 トークン`;
+
+    showGmailStatus('返信文を生成しました', 'success');
+    saveGmailPrefs();
+
+  } catch(err) {
+    showGmailStatus(`エラー: ${err.message}`, 'error');
+  } finally {
+    genBtn.disabled = false;
+    document.getElementById('generate-btn-icon').textContent = '✨';
+    document.getElementById('generate-btn-text').textContent = '返信文を生成する';
+  }
+}
+
+// --- Copy & clear ---
+function copyReply() {
+  const text = document.getElementById('gmail-reply').value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('copy-toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  }).catch(() => {
+    document.getElementById('gmail-reply').select();
+    document.execCommand('copy');
+  });
+}
+
+function clearReply() {
+  document.getElementById('gmail-reply').value = '';
+  document.getElementById('gmail-reply').style.display = 'none';
+  document.getElementById('reply-actions').style.display = 'none';
+  document.getElementById('reply-placeholder').style.display = 'block';
+  document.getElementById('gmail-guide').style.display = 'block';
+  document.getElementById('reply-model-badge').textContent = '';
+}
+
+function initGmailPage() {
+  loadGmailPrefs();
+  updateApiKeyBadge();
+
+  // Restore tone button
+  document.querySelectorAll('#tone-grid .tone-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tone === gmailState.tone);
+  });
+  // Restore lang button
+  document.querySelectorAll('[data-lang]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === gmailState.lang);
+  });
 }
 
 // =============================
